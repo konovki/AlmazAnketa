@@ -75,6 +75,14 @@
             align-items: center;
             gap: 5px;
         }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .button-group button {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -162,7 +170,10 @@
             <textarea id="foreign_passport_issued_by" placeholder="Укажите полное название органа, выдавшего паспорт" autocomplete="off" autocorrect="off"></textarea>
         </div>
 
-        <button type="button" id="saveBtn">Сохранить данные в файл</button>
+        <div class="button-group">
+            <button type="button" id="saveCsvBtn">Сохранить в CSV</button>
+            <button type="button" id="saveDocBtn">Сохранить в DOC</button>
+        </div>
     </form>
     <div id="message"></div>
 
@@ -200,9 +211,9 @@
             e.target.value = value;
         });
 
-        document.getElementById("saveBtn").addEventListener("click", function() {
-            // Собираем данные только текущего пользователя
-            const currentUserData = {
+        // Функция сбора данных с формы
+        function collectFormData() {
+            const data = {
                 surname: document.getElementById("surname").value,
                 name: document.getElementById("name").value,
                 Middle_name: document.getElementById("Middle_name").value,
@@ -220,32 +231,34 @@
                 timestamp: new Date().toLocaleString()
             };
 
-            // Если есть заграничный паспорт, добавляем его данные
-            if (currentUserData.has_foreign_passport === 'Да') {
-                currentUserData.foreign_passport_series = document.getElementById("foreign_passport_series").value;
-                currentUserData.foreign_passport_number = document.getElementById("foreign_passport_number").value;
-                currentUserData.foreign_passport_issue_date = document.getElementById("foreign_passport_issue_date").value;
-                currentUserData.foreign_passport_expiry_date = document.getElementById("foreign_passport_expiry_date").value;
-                currentUserData.foreign_passport_issued_by = document.getElementById("foreign_passport_issued_by").value;
+            if (data.has_foreign_passport === 'Да') {
+                data.foreign_passport_series = document.getElementById("foreign_passport_series").value;
+                data.foreign_passport_number = document.getElementById("foreign_passport_number").value;
+                data.foreign_passport_issue_date = document.getElementById("foreign_passport_issue_date").value;
+                data.foreign_passport_expiry_date = document.getElementById("foreign_passport_expiry_date").value;
+                data.foreign_passport_issued_by = document.getElementById("foreign_passport_issued_by").value;
             }
 
-            // Проверяем обязательные поля
+            return data;
+        }
+
+        // Функция валидации данных
+        function validateFormData(data) {
             const requiredFields = [
-                currentUserData.name, currentUserData.surname, currentUserData.Middle_name,
-                currentUserData.birth_date, currentUserData.birth_place,
-                currentUserData.passport_series, currentUserData.passport_number,
-                currentUserData.passport_issue_date, currentUserData.passport_code,
-                currentUserData.passport_issued_by
+                data.surname, data.name, data.Middle_name,
+                data.birth_date, data.birth_place,
+                data.passport_series, data.passport_number,
+                data.passport_issue_date, data.passport_code,
+                data.passport_issued_by
             ];
 
-            // Если выбран заграничный паспорт, проверяем и его поля
-            if (currentUserData.has_foreign_passport === 'Да') {
+            if (data.has_foreign_passport === 'Да') {
                 requiredFields.push(
-                    currentUserData.foreign_passport_series,
-                    currentUserData.foreign_passport_number,
-                    currentUserData.foreign_passport_issue_date,
-                    currentUserData.foreign_passport_expiry_date,
-                    currentUserData.foreign_passport_issued_by
+                    data.foreign_passport_series,
+                    data.foreign_passport_number,
+                    data.foreign_passport_issue_date,
+                    data.foreign_passport_expiry_date,
+                    data.foreign_passport_issued_by
                 );
             }
 
@@ -253,12 +266,26 @@
                 document.getElementById("message").innerHTML = `
                     <p style="color: red;">Пожалуйста, заполните все обязательные поля!</p>
                 `;
-                return;
+                return false;
             }
+            return true;
+        }
 
-            // Конвертируем в CSV (только текущего пользователя)
-            const headers = Object.keys(currentUserData).join(",");
-            const row = Object.values(currentUserData).map(val => `"${val}"`).join(",");
+        // Функция сброса формы
+        function resetForm() {
+            document.getElementById("myForm").reset();
+            document.getElementById('foreignPassportFields').style.display = 'none';
+            document.getElementById('foreign_passport_no').checked = true;
+        }
+
+        // Сохранение в CSV
+        document.getElementById('saveCsvBtn').addEventListener('click', function() {
+            const data = collectFormData();
+            if (!validateFormData(data)) return;
+
+            // Конвертируем в CSV
+            const headers = Object.keys(data).join(",");
+            const row = Object.values(data).map(val => `"${val}"`).join(",");
             const csvContent = headers + "\n" + row;
 
             // Создаем и скачиваем файл
@@ -270,17 +297,118 @@
             a.click();
             URL.revokeObjectURL(url);
 
-            // Показываем сообщение об успехе
+            // Показываем сообщение
             document.getElementById("message").innerHTML = `
-                <p style="color: green;">Данные сохранены в файл!</p>
+                <p style="color: green;">Данные сохранены в CSV-файл!</p>
             `;
 
-            // Очищаем форму
-            document.getElementById("myForm").reset();
-            // Сбрасываем видимость полей заграничного паспорта
-            document.getElementById('foreignPassportFields').style.display = 'none';
-            document.getElementById('foreign_passport_no').checked = true;
+            resetForm();
         });
+
+        // Сохранение в DOC
+        document.getElementById('saveDocBtn').addEventListener('click', function() {
+            const data = collectFormData();
+            if (!validateFormData(data)) return;
+
+            // Генерация HTML для Word
+            const docContent = generateWordContent(data);
+            
+            // Создаем и скачиваем файл
+            const blob = new Blob([docContent], { type: "application/msword" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "user_data.doc";
+            a.click();
+            URL.revokeObjectURL(url);
+
+            // Показываем сообщение
+            document.getElementById("message").innerHTML = `
+                <p style="color: green;">Данные сохранены в DOC-файл!</p>
+            `;
+
+            resetForm();
+        });
+
+        // Генерация содержимого Word-документа
+        function generateWordContent(data) {
+            // Сопоставление русских названий полей
+            const fieldNames = {
+                surname: "Фамилия",
+                name: "Имя",
+                Middle_name: "Отчество",
+                q_2: "Изменение ФИО",
+                birth_date: "Дата рождения",
+                birth_place: "Место рождения",
+                age: "Возраст",
+                address: "Адрес проживания",
+                passport_series: "Серия паспорта РФ",
+                passport_number: "Номер паспорта РФ",
+                passport_issue_date: "Дата выдачи паспорта РФ",
+                passport_code: "Код подразделения",
+                passport_issued_by: "Кем выдан",
+                has_foreign_passport: "Наличие загранпаспорта",
+                foreign_passport_series: "Серия загранпаспорта",
+                foreign_passport_number: "Номер загранпаспорта",
+                foreign_passport_issue_date: "Дата выдачи загранпаспорта",
+                foreign_passport_expiry_date: "Срок действия загранпаспорта",
+                foreign_passport_issued_by: "Кем выдан загранпаспорт",
+                timestamp: "Дата и время заполнения"
+            };
+
+            // Создаем HTML-таблицу с данными
+            let tableRows = '';
+            for (const [key, value] of Object.entries(data)) {
+                const fieldName = fieldNames[key] || key;
+                tableRows += `
+                    <tr>
+                        <td width="40%" style="border: 1px solid #ccc; padding: 8px; font-weight: bold;">${fieldName}</td>
+                        <td width="60%" style="border: 1px solid #ccc; padding: 8px;">${value || '—'}</td>
+                    </tr>
+                `;
+            }
+
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Анкета пользователя</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 2cm;
+                        }
+                        h1 {
+                            color: #2e6c80;
+                            text-align: center;
+                            margin-bottom: 30px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 30px;
+                        }
+                        .footer {
+                            text-align: right;
+                            margin-top: 50px;
+                            font-size: 14px;
+                            color: #666;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Анкета пользователя</h1>
+                    <table>
+                        ${tableRows}
+                    </table>
+                    <div class="footer">
+                        Сформировано: ${new Date().toLocaleString()}
+                    </div>
+                </body>
+                </html>
+            `;
+        }
     </script>
 </body>
 </html>
