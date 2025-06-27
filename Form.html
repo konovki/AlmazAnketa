@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оффлайн-анкета</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input, button, textarea {
+            padding: 8px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        textarea {
+            min-height: 60px;
+            resize: vertical;
+            overflow-y: auto;
+        }
+        #message {
+            margin-top: 10px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Заполните анкету</h1>
+    <form id="myForm" autocomplete="off">
+        <input type="text" id="name" placeholder="Ваше имя" required autocomplete="off" autocorrect="off">
+        <input type="number" id="age" placeholder="Ваш возраст" autocomplete="off">
+        <input type="email" id="email" placeholder="Ваш email" autocomplete="off">
+        <textarea id="address" placeholder="Место жительства с 16 лет (укажите все адреса и периоды проживания)" autocomplete="off"></textarea>
+        <button type="button" id="saveBtn">Сохранить данные в файл</button>
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById("saveBtn").addEventListener("click", function() {
+            // Собираем данные только текущего пользователя
+            const currentUserData = {
+                name: document.getElementById("name").value,
+                age: document.getElementById("age").value,
+                email: document.getElementById("email").value,
+                address: document.getElementById("address").value,
+                timestamp: new Date().toLocaleString()
+            };
+
+            // Проверяем, заполнено ли хотя бы имя (как обязательное поле)
+            if (!currentUserData.name) {
+                document.getElementById("message").innerHTML = `
+                    <p style="color: red;">Пожалуйста, укажите хотя бы имя!</p>
+                `;
+                return;
+            }
+
+            // Конвертируем в CSV (только текущего пользователя)
+            const headers = Object.keys(currentUserData).join(",");
+            const row = Object.values(currentUserData).map(val => `"${val}"`).join(",");
+            const csvContent = headers + "\n" + row;
+
+            // Создаем и скачиваем файл
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "user_data.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+
+            // Показываем сообщение об успехе
+            document.getElementById("message").innerHTML = `
+                <p style="color: green;">Данные сохранены в файл!</p>
+            `;
+
+            // Очищаем форму
+            document.getElementById("myForm").reset();
+        });
+    </script>
+</body>
+</html>
