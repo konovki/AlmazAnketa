@@ -8,7 +8,7 @@
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
         form {
@@ -16,7 +16,7 @@
             flex-direction: column;
             gap: 10px;
         }
-        input, button, textarea {
+        input, button, textarea, select {
             padding: 8px;
             font-size: 16px;
         }
@@ -25,6 +25,7 @@
             color: white;
             border: none;
             cursor: pointer;
+            padding: 10px;
         }
         textarea {
             min-height: 60px;
@@ -35,36 +36,222 @@
             margin-top: 10px;
             min-height: 20px;
         }
+        input[type="date"] {
+            padding: 7px;
+        }
+        .date-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: -8px;
+            margin-bottom: 5px;
+        }
+        .passport-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .passport-row > div {
+            flex: 1;
+            min-width: 120px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+        .foreign-passport-fields {
+            display: none;
+            margin-top: 10px;
+            border-left: 3px solid #2196F3;
+            padding-left: 10px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
     </style>
 </head>
 <body>
     <h1>Заполните анкету</h1>
     <form id="myForm" autocomplete="off">
+        <!-- Персональные данные -->
         <input type="text" id="surname" placeholder="Ваша Фамилия" required autocomplete="off" autocorrect="off">
         <input type="text" id="name" placeholder="Ваше Имя" required autocomplete="off" autocorrect="off">
-        <input type="text" id="Middle name" placeholder="Ваше  Отчество" required autocomplete="off" autocorrect="off">
+        <input type="text" id="Middle_name" placeholder="Ваше Отчество" required autocomplete="off" autocorrect="off">
+        <textarea id="q_2" placeholder="Изменяли ли Вы фамилию, имя или отчество (если изменяли, укажите их, а также когда, где и по какой причине)" required autocomplete="off" autocorrect="off"></textarea>
+
+        <!-- Дата и место рождения -->
+        <label for="birth_date">Дата рождения:</label>
+        <input type="date" id="birth_date" required autocomplete="off">
+        <div class="date-hint">Используйте календарь или введите в формате ДД.ММ.ГГГГ</div>
+        <textarea id="birth_place" placeholder="Место рождения (село, деревня, город, район, область, край, республика, страна)" required autocomplete="off" autocorrect="off"></textarea>
+
         <input type="number" id="age" placeholder="Ваш возраст" autocomplete="off">
-        <input type="email" id="email" placeholder="Ваш email" autocomplete="off">
         <textarea id="address" placeholder="Место жительства с 16 лет (укажите все адреса и периоды проживания)" autocomplete="off"></textarea>
+
+        <!-- Паспортные данные РФ -->
+        <div class="section-title">Паспортные данные РФ:</div>
+
+        <div class="passport-row">
+            <div>
+                <label for="passport_series">Серия</label>
+                <input type="text" id="passport_series" placeholder="1234" pattern="\d{4}" maxlength="4" required autocomplete="off">
+            </div>
+            <div>
+                <label for="passport_number">Номер</label>
+                <input type="text" id="passport_number" placeholder="567890" pattern="\d{6}" maxlength="6" required autocomplete="off">
+            </div>
+        </div>
+
+        <div class="passport-row">
+            <div>
+                <label for="passport_issue_date">Дата выдачи</label>
+                <input type="date" id="passport_issue_date" required autocomplete="off">
+            </div>
+            <div>
+                <label for="passport_code">Код подразделения</label>
+                <input type="text" id="passport_code" placeholder="123-456" pattern="\d{3}-\d{3}" maxlength="7" required autocomplete="off">
+            </div>
+        </div>
+
+        <label for="passport_issued_by">Кем выдан</label>
+        <textarea id="passport_issued_by" placeholder="Укажите полное название органа, выдавшего паспорт" required autocomplete="off" autocorrect="off"></textarea>
+
+        <!-- Заграничный паспорт -->
+        <div class="section-title">Имеете ли Вы паспорт, удостоверяющий личность гражданина Российской Федерации за пределами территории Российской Федерации (в том числе служебный или дипломатический)?</div>
+
+        <div class="radio-group">
+            <label class="radio-option">
+                <input type="radio" name="foreign_passport" value="yes" id="foreign_passport_yes"> Да
+            </label>
+            <label class="radio-option">
+                <input type="radio" name="foreign_passport" value="no" id="foreign_passport_no" checked> Нет
+            </label>
+        </div>
+
+        <div id="foreignPassportFields" class="foreign-passport-fields">
+            <div class="passport-row">
+                <div>
+                    <label for="foreign_passport_series">Серия</label>
+                    <input type="text" id="foreign_passport_series" placeholder="12" pattern="\d{2}" maxlength="2" autocomplete="off">
+                </div>
+                <div>
+                    <label for="foreign_passport_number">Номер</label>
+                    <input type="text" id="foreign_passport_number" placeholder="3456789" pattern="\d{7}" maxlength="7" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="passport-row">
+                <div>
+                    <label for="foreign_passport_issue_date">Дата выдачи</label>
+                    <input type="date" id="foreign_passport_issue_date" autocomplete="off">
+                </div>
+                <div>
+                    <label for="foreign_passport_expiry_date">Срок действия</label>
+                    <input type="date" id="foreign_passport_expiry_date" autocomplete="off">
+                </div>
+            </div>
+
+            <label for="foreign_passport_issued_by">Кем выдан</label>
+            <textarea id="foreign_passport_issued_by" placeholder="Укажите полное название органа, выдавшего паспорт" autocomplete="off" autocorrect="off"></textarea>
+        </div>
+
         <button type="button" id="saveBtn">Сохранить данные в файл</button>
     </form>
     <div id="message"></div>
 
     <script>
+        // Обработка переключения полей заграничного паспорта
+        document.querySelectorAll('input[name="foreign_passport"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const foreignPassportFields = document.getElementById('foreignPassportFields');
+                if (this.value === 'yes') {
+                    foreignPassportFields.style.display = 'block';
+                    // Делаем поля обязательными
+                    document.getElementById('foreign_passport_series').required = true;
+                    document.getElementById('foreign_passport_number').required = true;
+                    document.getElementById('foreign_passport_issue_date').required = true;
+                    document.getElementById('foreign_passport_expiry_date').required = true;
+                    document.getElementById('foreign_passport_issued_by').required = true;
+                } else {
+                    foreignPassportFields.style.display = 'none';
+                    // Снимаем обязательность полей
+                    document.getElementById('foreign_passport_series').required = false;
+                    document.getElementById('foreign_passport_number').required = false;
+                    document.getElementById('foreign_passport_issue_date').required = false;
+                    document.getElementById('foreign_passport_expiry_date').required = false;
+                    document.getElementById('foreign_passport_issued_by').required = false;
+                }
+            });
+        });
+
+        // Маска для кода подразделения
+        document.getElementById("passport_code").addEventListener("input", function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 3) {
+                value = value.substring(0, 3) + '-' + value.substring(3, 6);
+            }
+            e.target.value = value;
+        });
+
         document.getElementById("saveBtn").addEventListener("click", function() {
             // Собираем данные только текущего пользователя
             const currentUserData = {
+                surname: document.getElementById("surname").value,
                 name: document.getElementById("name").value,
+                Middle_name: document.getElementById("Middle_name").value,
+                q_2: document.getElementById("q_2").value,
+                birth_date: document.getElementById("birth_date").value,
+                birth_place: document.getElementById("birth_place").value,
                 age: document.getElementById("age").value,
-                email: document.getElementById("email").value,
                 address: document.getElementById("address").value,
+                passport_series: document.getElementById("passport_series").value,
+                passport_number: document.getElementById("passport_number").value,
+                passport_issue_date: document.getElementById("passport_issue_date").value,
+                passport_code: document.getElementById("passport_code").value,
+                passport_issued_by: document.getElementById("passport_issued_by").value,
+                has_foreign_passport: document.querySelector('input[name="foreign_passport"]:checked').value === 'yes' ? 'Да' : 'Нет',
                 timestamp: new Date().toLocaleString()
             };
 
-            // Проверяем, заполнено ли хотя бы имя (как обязательное поле)
-            if (!currentUserData.name) {
+            // Если есть заграничный паспорт, добавляем его данные
+            if (currentUserData.has_foreign_passport === 'Да') {
+                currentUserData.foreign_passport_series = document.getElementById("foreign_passport_series").value;
+                currentUserData.foreign_passport_number = document.getElementById("foreign_passport_number").value;
+                currentUserData.foreign_passport_issue_date = document.getElementById("foreign_passport_issue_date").value;
+                currentUserData.foreign_passport_expiry_date = document.getElementById("foreign_passport_expiry_date").value;
+                currentUserData.foreign_passport_issued_by = document.getElementById("foreign_passport_issued_by").value;
+            }
+
+            // Проверяем обязательные поля
+            const requiredFields = [
+                currentUserData.name, currentUserData.surname, currentUserData.Middle_name,
+                currentUserData.birth_date, currentUserData.birth_place,
+                currentUserData.passport_series, currentUserData.passport_number,
+                currentUserData.passport_issue_date, currentUserData.passport_code,
+                currentUserData.passport_issued_by
+            ];
+
+            // Если выбран заграничный паспорт, проверяем и его поля
+            if (currentUserData.has_foreign_passport === 'Да') {
+                requiredFields.push(
+                    currentUserData.foreign_passport_series,
+                    currentUserData.foreign_passport_number,
+                    currentUserData.foreign_passport_issue_date,
+                    currentUserData.foreign_passport_expiry_date,
+                    currentUserData.foreign_passport_issued_by
+                );
+            }
+
+            if (requiredFields.some(field => !field)) {
                 document.getElementById("message").innerHTML = `
-                    <p style="color: red;">Пожалуйста, укажите хотя бы имя!</p>
+                    <p style="color: red;">Пожалуйста, заполните все обязательные поля!</p>
                 `;
                 return;
             }
@@ -90,6 +277,9 @@
 
             // Очищаем форму
             document.getElementById("myForm").reset();
+            // Сбрасываем видимость полей заграничного паспорта
+            document.getElementById('foreignPassportFields').style.display = 'none';
+            document.getElementById('foreign_passport_no').checked = true;
         });
     </script>
 </body>
